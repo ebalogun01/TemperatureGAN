@@ -47,8 +47,6 @@ class TrainDataLoader:
             month_train_label = F.one_hot(torch.tensor([month_label]), num_classes=12).float()
             for loc in self.locations:
                 # loc is a tuple here
-                # USE ONE-HOT ENCODING FOR MONTH? LEAVE OUT FOR NOW
-                # TODO: just focus on location and month right now
                 spatial_label = np.array(list(loc))
                 loc_data = np.load(base_path_str.format(period, period, loc[0], loc[1]), allow_pickle=True)
                 loc_month_data = loc_data[month_label]
