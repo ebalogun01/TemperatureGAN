@@ -1,6 +1,6 @@
 {
  "gmst": {
-  "use": true,
+  "use": false,
   "mean": 1.7738482303180367e-15,
   "std": 0.9999999999999966,
   "min": -1.6155135489154266,
@@ -8,7 +8,7 @@
   "normalize": true,
   "precalc": false
  },
- "gmst_data": "/home/groups/arunava/GMST/gmst_labels.npy",
+ "gmst_data": "path_goes_here",
  "mean_padding": false,
  "parallel": false,
  "mode_seeking": false,
@@ -53,10 +53,10 @@
  "num_test_samples": 4096,
  "results_dir": "tgan1.1.4",
  "data_file": [
-  "/home/groups/arunava/QuantileLabels/ExWGan/data/clean_data/clean_nldas_training_data_temperature.npy",
-  "/home/groups/arunava/QuantileLabels/ExWGan/data/clean_data/clean_nldas_training_data_month.npy",
-  "/home/groups/arunava/QuantileLabels/ExWGan/data/clean_data/clean_nldas_training_data_period.npy",
-  "/home/groups/arunava/QuantileLabels/ExWGan/data/clean_data/clean_nldas_training_data_loc.npy"],
+  "data/clean_nldas_training_data_temperature.npy",
+  "data/clean_nldas_training_data_month.npy",
+  "data/clean_nldas_training_data_period.npy",
+  "data/clean_nldas_training_data_loc.npy"],
  "network_module": "gan",
  "fake_training": {
   "use": false,
@@ -66,5 +66,5 @@
  "local": false,
  "torch_seed": 0,
  "np_seed": 0,
- "notes": "OG Model, Weight Decay, 3 D steps, Label is Month, Period, Location. Label used to be Month, Location, Period. Includes GMST. "
+ "notes": ""
 }
