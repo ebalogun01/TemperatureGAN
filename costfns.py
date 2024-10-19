@@ -1,10 +1,6 @@
-import torch.nn as nn
 import torch
-import torch.nn.functional as F
-import torch.optim as optim
-from torch.autograd import Variable
 from torch import autograd
-import numpy as np
+from torch.autograd import Variable
 
 
 def gradient_penalty(D, real, fake, labels, c, device):
@@ -29,14 +25,13 @@ def gradient_penalty(D, real, fake, labels, c, device):
     grad_penalty = ((grad_norm - 1) ** 2).mean() * lam
     return grad_penalty
 
+
 def gradient_penalty_S(D, real, fake, labels, c, device):
     """Heuristic for enforcing the 1-Lipshitz Constraint"""
     lam = c["gp_reg"]
     batch_size = int(real.shape[0])
     eta = torch.rand(batch_size, 1, 1, device=device)
     eta = eta.expand_as(real)
-    # check1 = eta[1]
-    # check2 = eta[2]
 
     interpolated = eta * real + ((1 - eta) * fake)
     interpolated = Variable(interpolated, requires_grad=True)
@@ -49,15 +44,13 @@ def gradient_penalty_S(D, real, fake, labels, c, device):
                               grad_outputs=torch.ones(prob_interpolated.size(), device=device),
                               create_graph=True, retain_graph=True)[0]
     gradients = gradients.view(batch_size, -1)
-    # grad_test = gradients[0]
-    # grad_test2 = gradients[1]
     grad_norm = gradients.norm(2, dim=1)
     grad_penalty = ((grad_norm - 1) ** 2).mean() * lam
     return grad_penalty
 
+
 def wasserstein_gen(D, G, c, device, labels, temporal_gradient_pen=False):
     """This could already work with the temporal loss scheme incorporated in  DVDGAN"""
-    grad_penalty, temporal_pen = 0, 0
     # Train Generator to pretend it's genuine
     g_input_z = torch.rand(int(labels.shape[0]), c["g_input_size"], device=device)
     gen_input = Variable(torch.cat((g_input_z, labels), dim=1))
@@ -66,12 +59,11 @@ def wasserstein_gen(D, G, c, device, labels, temporal_gradient_pen=False):
     g_error = -torch.mean(dg_fake_decision)
     return g_error
 
+
 def wasserstein_critic(D, G, c, device, real_data, labels, with_grad_pen=True, reweigh_cost=False):
     critic_input_z = torch.rand(int(real_data.shape[0]), c["g_input_size"], device=device, requires_grad=False)
-    # print(int(real_data.shape[0]))
     gen_input = Variable(torch.cat((critic_input_z, labels), axis=1))  # need to add location variable here but we need the time generator
     grad_penalty = 0
-    # img = real_data
     fake_data = G(gen_input).detach()
     critic_real_score = D(real_data, labels)
     critic_fake_score = D(fake_data, labels)
@@ -87,14 +79,15 @@ def wasserstein_critic(D, G, c, device, real_data, labels, with_grad_pen=True, r
 
     if with_grad_pen:
         grad_penalty = gradient_penalty(D, real_data, fake_data, labels, c, device)
-    # img = real_data
     total_cost = -1 * (critic_real_err - critic_fake_err) + grad_penalty
     return total_cost, grad_penalty
+
 
 def temporal_gradient_penalty(fake_data, temporal_grad_factor=1.0):
     """This is used to penalize the gradients in space, forcing it to match the real distribution"""
     penalty = torch.square(fake_data[:, 0:23, :, :] - fake_data[:, 1:24, :, :]).mean()
     return temporal_grad_factor * penalty
+
 
 def mode_seeking(G, c, device, labels):
     """ This begins the implementation of the mode-seeking GANs (Mao et. Al) """

@@ -8,7 +8,17 @@
   "normalize": true,
   "precalc": false
  },
+ "co2": {
+  "use": false,
+  "mean": 23288.21067642893,
+  "std": 5158.156559493484,
+  "min": 4946.62713,
+  "max": 32912.578438892,
+  "normalize": true,
+  "precalc": false
+ },
  "gmst_data": "path_goes_here",
+ "co2_data": "path_goes_here",
  "mean_padding": false,
  "parallel": false,
  "mode_seeking": false,
@@ -46,11 +56,11 @@
  "save_interval": 1000,
  "print_interval": 200,
  "test_interval": 500,
- "tensorboard_interval": 200,
- "d_steps": 3,
+ "tensorboard_interval": 20,
+ "d_steps": 2,
  "g_steps": 1,
- "samples_per_batch": 4096,
- "num_test_samples": 4096,
+ "samples_per_batch": 32,
+ "num_test_samples": 32,
  "results_dir": "tgan1.1.4",
  "data_file": [
   "data/clean_nldas_training_data_temperature.npy",

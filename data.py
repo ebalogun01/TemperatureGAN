@@ -1,16 +1,18 @@
 """
-Data Preprocessing for the thermal images,
+Data Preprocessing for the thermal images (temperature data) for the training of the model. Should not be needed for
+training but a reference if special new preprocessing is needed.
 """
-from dataclasses import dataclass
-import torch
-import numpy as np
-import torch.nn.functional as F
 import json
+from dataclasses import dataclass
+import numpy as np
+import torch
+import torch.nn.functional as F
+
 
 @dataclass
 class TrainDataLoader:
     config: dict
-    temporal_len: int = 24 # hours
+    temporal_len: int = 24  # hours
     start_lon: int = 1  # grid boxes
     start_lat: int = 1  # grid boxes count
 
@@ -19,10 +21,11 @@ class TrainDataLoader:
         self.end_month = self.config["end_month"]
         self.start_lat = self.config["start_loc_lat"]
         self.start_lon = self.config["start_loc_lon"]
-        self.num_lon_pts = self.config["num_lon_pts"]  # stopping at west coast regions (CA, OR, NV, AZ(partly), ID(partly))
+        self.num_lon_pts = self.config[
+            "num_lon_pts"]  # stopping at west coast regions (CA, OR, NV, AZ(partly), ID(partly))
         self.num_lat_pts = self.config["num_lat_pts"]
         self.locations = [(lon, lat) for lon in range(self.start_lon, self.num_lon_pts + 1) for lat in
-                     range(self.start_lat, self.num_lat_pts + 1)]
+                          range(self.start_lat, self.num_lat_pts + 1)]
         self.examples = 10
 
     def crop_data_by_loc(self):
@@ -38,15 +41,18 @@ class TrainDataLoader:
 
     def load_dataset(self, period, noise_dist="gaussian", save_labels=True):
         """This will prepare dataset for an entire period..."""
-        #TODO: include variable to allow parallel loading of these datasets
+        # TODO: include variable to allow parallel loading of these datasets
+        thermal_images = np.array([])
+        month_labels = np.array([])
+        loc_labels = np.array([])
         base_path_str = "data/CA_train/data_CA_OR_WA_period_{}/train_{}_1-12loc_{}_{}.npy"
         initial_dataset = True
-        for month in range(self.start_month, self.end_month+1):
+        for month in range(self.start_month, self.end_month + 1):
             month_label = month - 1
             loc_labels_cum = np.array([])
             month_train_label = F.one_hot(torch.tensor([month_label]), num_classes=12).float()
             for loc in self.locations:
-                # loc is a tuple here
+                # loc is a tuple here.
                 spatial_label = np.array(list(loc))
                 loc_data = np.load(base_path_str.format(period, period, loc[0], loc[1]), allow_pickle=True)
                 loc_month_data = loc_data[month_label]
@@ -72,6 +78,7 @@ class TrainDataLoader:
             month_idx = month - 1
             self.load_dataset(month_idx)
 
+
 def test():
     with open('data.json', 'r') as fp:
         config = json.load(fp)
@@ -84,6 +91,3 @@ def test():
 if __name__ == "__main__":
     #   testing the dataloader that eventually was used in the test folder
     test()
-
-
-

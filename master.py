@@ -1,7 +1,11 @@
-from train import Trainer
-import os
 import json
+import os
 import numpy as np
+from train import Trainer
+
+
+USE_NUM_TRAINING_SAMPLES = 1000
+
 
 def main(interactive=False):
     # OPTIONAL CODE BLOCK
@@ -19,7 +23,7 @@ def main(interactive=False):
                         config = json.load(f)
 
     print("Beginning training pre-load...")
-    if config['gmst']['use'] or config['co2']['use']:
+    if config['gmst']['use']:
         from gan import GeneratorGMST as Generator
         from gan import DiscriminatorGMST as Discriminator
         from gan import DiscriminatorTGMST as DiscriminatorT
@@ -34,10 +38,11 @@ def main(interactive=False):
     # init Generator
     G = [Generator(config)]
 
-    data = np.load(config["data_file"][0])
-    loc_label = np.load(config["data_file"][3])
-    month_label = np.load(config["data_file"][1])
-    period_label = np.load(config["data_file"][2])
+    data = np.load(config["data_file"][0])[:USE_NUM_TRAINING_SAMPLES]
+    loc_label = np.load(config["data_file"][3])[:USE_NUM_TRAINING_SAMPLES]
+    month_label = np.load(config["data_file"][1])[:USE_NUM_TRAINING_SAMPLES]
+    period_label = np.load(config["data_file"][2])[:USE_NUM_TRAINING_SAMPLES]
+
     if config['gmst']['use']:
         gmst_data = np.load(config['gmst_data'])
         if config['gmst']['normalize'] and not config['gmst']['precalc']:

@@ -1,23 +1,21 @@
+import datetime
+import json
+import logging
+import os
+import pathlib
+import timeit
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from costfns import wasserstein_gen, wasserstein_critic, mode_seeking
 import torch.utils.data as data_utils
-import json
-import pathlib
-import logging
-import os
 import wandb
-import timeit
-import datetime
-
+from costfns import wasserstein_gen, wasserstein_critic, mode_seeking
 
 wandb.login()
 logging.basicConfig()  # to be done in training (on each training session)
 
 
 class Trainer:
-    # TODO: need to fix image normalization scheme to deal with out-of-distribution liers (regions with no data)
     def __init__(self, config, D, G, D_data, labels, normalize_data=True,
                  train_G=True, data_std=10.88, data_mean=284.1, vegetation_data=None,
                  log_gradients=False, legacy=False):
@@ -70,7 +68,7 @@ class Trainer:
     def train(self):
         with wandb.init(config=self.config, project='legacyFinetuning', notes='testing new finetuning code'):
             c = self.config
-            D_data = self.D_data    # modified code to fit wandb
+            D_data = self.D_data  # modified code to fit wandb
             labels = self.labels
 
             # Create results directories
@@ -108,10 +106,9 @@ class Trainer:
 
             if c["mean_padding"]:
                 D_data[D_data == 0] = self.data_mean
-                self.data_min = D_data.min()    # corrected 7/18/22
+                self.data_min = D_data.min()  # corrected 7/18/22
 
-            # Normalize data OR standardize data - OPTIONAL
-            # todo: Make changes here later to only do standardization.
+            # Normalize data OR standardize data - OPTIONAL.
             if self.normalize_data:
                 # Currently uses both normalization and standardization to constrain the data to range [-1, 1]
                 D_data = (D_data - self.data_min) / (self.data_max - self.data_min)
@@ -126,7 +123,6 @@ class Trainer:
             if c["resume"]["status"]:
                 models = torch.load(
                     os.path.join(c["results_dir"], "models", "model_{}".format(c["resume"]["resume_from"])))
-                # assign Gen and Critic models already done in __post__init()
                 epoch_start = models["epoch_num"]
                 total_batch_tally = models["batch_num"]
                 logger.info(f'Resuming training for {c["results_dir"]}')
@@ -135,12 +131,12 @@ class Trainer:
                 total_batch_tally = 1
                 logger.info("Starting new training for {}".format(c["results_dir"]))
 
-            # Send models to device
+            # Send models to device.
             self.G.to(device)
             self.D_T.to(device)
             self.D_S.to(device)
 
-            # Set the Optimizer and scale G LR
+            # Set the Optimizer and scale G LR.
             if c["optimizer"] == 'adam':
                 if c["resume"]["status"]:
                     logger.info(f'Loading and resuming ADAM optimizer state dict from {c["resume"]["resume_from"]}')
@@ -195,13 +191,13 @@ class Trainer:
             with open(path, 'w') as fp:
                 json.dump(c, fp, indent=1)
 
-            # Data statistics
+            # Data statistics.
             num_samples = D_data.shape[0]
             batches_per_epoch = num_samples // c["samples_per_batch"]
             total_iterations = batches_per_epoch * c["num_epochs"]
             # torch.autograd.set_detect_anomaly(True)
 
-            # Run through epochs
+            # Run through epochs.
             train_start_time = timeit.default_timer()
             remaining_time = "inf"
 
@@ -223,8 +219,10 @@ class Trainer:
                         critic_optimizer_T.zero_grad()
                         critic_optimizer_S.zero_grad()
                         #   Get the losses for backprop.
-                        D_loss_T, grad_penalty_T = wasserstein_critic(self.D_T, self.G, c, device, train_data, label_data)
-                        D_loss_S, grad_penalty_S = wasserstein_critic(self.D_S, self.G, c, device, train_data, label_data)
+                        D_loss_T, grad_penalty_T = wasserstein_critic(self.D_T, self.G, c, device, train_data,
+                                                                      label_data)
+                        D_loss_S, grad_penalty_S = wasserstein_critic(self.D_S, self.G, c, device, train_data,
+                                                                      label_data)
                         # Backpropagation.
                         grad_penalty = grad_penalty_T + grad_penalty_S
                         D_loss_no_grad = D_loss_S + D_loss_T - grad_penalty
@@ -241,7 +239,7 @@ class Trainer:
                         gen_optimizer.zero_grad()
                         G_loss_T = wasserstein_gen(self.D_T, self.G, c, device, label_data)  # TEMPORAL DISC
                         G_loss_S = wasserstein_gen(self.D_S, self.G, c, device, label_data)  # SPATIAL DISC LOSS
-                        G_loss = G_loss_S + G_loss_T    # add a term for scaling T importance
+                        G_loss = G_loss_S + G_loss_T  # add a term for scaling T importance
                         if c['mode_seeking']:
                             G_loss += mode_seeking(self.G, c, device, label_data)
                         # backprop
@@ -291,14 +289,16 @@ class Trainer:
                                                                 "model_{}".format(total_batch_tally)))
 
                     if total_batch_tally % c["print_interval"] == 0:
-                        logger.info("Completed: Epoch {}/{} \t Batch {}/{} \t Total Batches {}/{} \t Time left {}".format(
-                            epoch, c["num_epochs"], batch_id, batches_per_epoch, total_batch_tally, total_iterations,
-                            remaining_time))
+                        logger.info(
+                            "Completed: Epoch {}/{} \t Batch {}/{} \t Total Batches {}/{} \t Time left {}".format(
+                                epoch, c["num_epochs"], batch_id, batches_per_epoch, total_batch_tally,
+                                total_iterations,
+                                remaining_time))
                     total_batch_tally = total_batch_tally + 1
 
                 total_time = timeit.default_timer() - train_start_time
-                time_per_epoch = total_time / (epoch - epoch_start+1)     # fixed this bug
+                time_per_epoch = total_time / (epoch - epoch_start + 1)  # fixed this bug
                 remaining_time = str(datetime.timedelta(seconds=(c["num_epochs"] - epoch) * time_per_epoch))
 
-        # When training is done, wrap up the wandb
+        # When training is done, wrap up the wandb.
         wandb.finish()
