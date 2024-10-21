@@ -17,5 +17,8 @@ Sessions can be run locally, on virtual servers, or on google Colab. Colab noteb
 - Use requirements.txt to create a conda repository.
 - Simply set the config.json files to point to data files and results directory. Set hyperparameters and set up training session.
 - Go to master.py and run the file.
-- Repository includes pre-trained models that can be used to generate samples. Refer to notebook for steps to do this.
+- Repository includes pre-trained models that can be used to generate samples. Notebook for steps to do this is work in progress, will update soon.
 - Repository does not include data because data files are large. Find training data [here](https://data.mendeley.com/datasets/9k892pzkfx/1).
+
+## Contact
+If you have any questions, feel free to contact me at ebalogun[AT]stanford[DOT]edu
