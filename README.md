@@ -13,7 +13,7 @@
 - config contains hyper-params, path to training files and other notes/conditions to be imposed by training session
 
 ## How to run
-Sessions can be run locally, on virtual servers, or on google Colab. Colab notebook is included in the main branch of the repository
+Sessions can be run locally or on virtual servers. Colab notebook is still in development and not provided yet.
 - Use requirements.txt to create a conda repository.
 - Simply set the config.json files to point to data files and results directory. Set hyperparameters and set up training session.
 - Go to master.py and run the file.
