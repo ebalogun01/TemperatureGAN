@@ -4,7 +4,7 @@
 ![Framework_model.png](docs_images%2FFramework_model.png)
 
 ## Link to paper
-[Paper](https://arxiv.org/abs/2306.17248)
+[Paper](https://www.cambridge.org/core/journals/environmental-data-science/article/temperaturegan-generative-modeling-of-regional-atmospheric-temperatures/1B55A7DF1CCFACE1A89FE4653D3FCA22)
 
 ## Description of files
 - train.py contains the training module that is initialized in master before the  training sessions begins
